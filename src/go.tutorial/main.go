@@ -12,6 +12,11 @@ func main() {
 		fmt.Println(w, "Hello, World!")
 	})
 
-	// 8000 포트로 웹 서버 구동
-	http.ListenAndServe(":8000", nil)
+	// "/about" 경로
+	http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "about")
+	})
+
+	// 8080 포트로 웹 서버 구동
+	http.ListenAndServe(":8080", nil)
 }
