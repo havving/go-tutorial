@@ -6,17 +6,32 @@ import (
 )
 
 func main() {
-	// "/" 경로로 접속했을 때 처리할 핸들러 함수 지정
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// "Hello, World!" 문자열을 화면에 출력
-		fmt.Println(w, "Hello, World!")
+	r := &router{make(map[string]map[string]http.HandlerFunc)}
+
+	r.HandleFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello, World!")
 	})
 
-	// "/about" 경로
-	http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "about")
+	r.HandleFunc("GET", "/about", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "About")
+	})
+
+	r.HandleFunc("GET", "/user/:id", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Get User")
+	})
+
+	r.HandleFunc("GET", "/user/:user_id/address/:address_id", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Get User's Address")
+	})
+
+	r.HandleFunc("POST", "/users", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Create User")
+	})
+
+	r.HandleFunc("POST", "/users/:user_id/addresses", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Create User's Address")
 	})
 
 	// 8080 포트로 웹 서버 구동
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", r)
 }
