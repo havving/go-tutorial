@@ -9,16 +9,16 @@ import (
 type router struct {
 	// key: http method
 	// value: url 패턴별로 실행할 HandlerFunc
-	handlers map[string]map[string]http.HandlerFunc
+	handlers map[string]map[string]HandlerFunc
 }
 
 /** 라우터에 핸들러를 등록하기 위한 메서드 **/
-func (r *router) HandleFunc(method, pattern string, h http.HandlerFunc) {
+func (r *router) HandleFunc(method, pattern string, h HandlerFunc) {
 	// http method로 등록된 맵이 있는지 확인
 	m, ok := r.handlers[method]
 	if !ok {
 		// 등록된 맵이 없으면 새 맵 생성
-		m = make(map[string]http.HandlerFunc)
+		m = make(map[string]HandlerFunc)
 		r.handlers[method] = m
 	}
 	// http method로 등록된 맵에 url 패턴과 핸들러 함수 등록
@@ -34,9 +34,19 @@ type Handler interface {
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// http 메서드에 맞는 모든 handers를 반복하여 요청 url에 해당하는 handler를 찾음
 	for pattern, handler := range r.handlers[req.Method] {
-		if ok, _ := match(pattern, req.URL.Path); ok {
+		if ok, params := match(pattern, req.URL.Path); ok {
+			// Context 생성
+			c := Context{
+				Params:         make(map[string]interface{}),
+				ResponseWriter: w,
+				Request:        req,
+			}
+			for k, v := range params {
+				c.Params[k] = v
+			}
+
 			// 요청 url에 해당하는 handler 수행
-			handler(w, req)
+			handler(&c)
 			return
 		}
 	}
